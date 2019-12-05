@@ -1,0 +1,6 @@
+C:\Users\Sam\source\repos\Graph\Graph\bin\Debug\Graph.exe.config
+C:\Users\Sam\source\repos\Graph\Graph\bin\Debug\Graph.exe
+C:\Users\Sam\source\repos\Graph\Graph\bin\Debug\Graph.pdb
+C:\Users\Sam\source\repos\Graph\Graph\obj\Debug\Graph.csprojAssemblyReference.cache
+C:\Users\Sam\source\repos\Graph\Graph\obj\Debug\Graph.exe
+C:\Users\Sam\source\repos\Graph\Graph\obj\Debug\Graph.pdb
