@@ -59,27 +59,84 @@ namespace Graph
 
         public (int, List<Node>) findShortestPath(string start, string end)
         {
+            //New Dictionary that contains a the name of each node and corresponding shortest path length and node order
             Dictionary<string, Tuple<int, List<Node>>> shortestPaths = new Dictionary<string, Tuple<int, List<Node>>>();
+            //List of remaining nodes
             List<string> remainingNodes = new List<string>();
+            //Loop over nodes and add each node to remaining nodes and shortest path with initial values of -1
             foreach(Node node in this.Nodes)
             {
                 remainingNodes.Add(node.name);
                 shortestPaths[node.name] = new Tuple<int, List<Node>> (-1, new List<Node>());
             }
 
+            //Set start node to path length of 0 and remove it from remaining nodes
             shortestPaths[start] = new Tuple<int, List<Node>>(0, new List<Node>());
             Node lastVisitedNode = getNodeByName(start);
             remainingNodes.Remove(start);
-            
-            
-            while (remainingNodes.Count > 0) {
-                foreach (KeyValuePair<string, int> node in lastVisitedNode.getConnectedNodes()) {
-                    int path = shortestPaths[lastVisitedNode.name].Item1 + node.Value;
 
+            List<Node> addNodeToPath(List<Node> oldPath, Node newNode)
+            {
+                //Create the new list of nodes on path
+                List<Node> newPath = new List<Node>();
+                foreach (Node node in oldPath)
+                {
+                    newPath.Add(node);
                 }
+                //Add new node to list
+                newPath.Add(newNode);
+                return newPath;
             }
+            
+            //Loop untill there are no remaining nodes
+            while (remainingNodes.Count > 0) {
+                //Loop over the connected Nodes of the last node removed
+                foreach (KeyValuePair<string, int> node in lastVisitedNode.getConnectedNodes()) {
+                    //calcuate the path length from its current shortest path + edge length
+                    int path = shortestPaths[lastVisitedNode.name].Item1 + node.Value;
+                    //Get the current shortest path to the node
+                    int currentShortestPath = shortestPaths[node.Key].Item1;
+                    //if the node as currentShortestPath of -1 it has not been visited yet
+                    if (currentShortestPath == -1) {
+                        //Add node to path
+                        List<Node> newPath = addNodeToPath(shortestPaths[lastVisitedNode.name].Item2, getNodeByName(node.Key));
+                        //Update shortest Paths
+                        shortestPaths[node.Key] = (path, newPath);
+
+                    } else if (path < shortestPaths[node.Key]) {
+                        //Add node to path
+                        List<Node> newPath = addNodeToPath(shortestPaths[lastVisitedNode.name].Item2, getNodeByName(node.Key));
+                        //Update shortest Paths
+                        shortestPaths[node.Key] = (path, newPath);
+                    }
+                }
+                //After updating all shortest paths of connected nodes, check for the shortest one
+                KeyValuePair<string, int> shortest = ("default", -1);
+                foreach(string nodeName in remainingNodes)
+                {
+                    Node node = getNodeByName(nodeName);
+                    //first nodes
+                    if (shortest.Value == -1) {
+                        //update shortest
+                        shortest = (nodeName, shortestPaths[nodeName].Item1);
+                    
+                    //check if the path to current node is shortest and make sure it has actually been visited
+                    } else if (shortestPaths[nodeName].Item1 < shortest.Value && shortestPaths[nodeName].Item1 != -1)
+                    {
+                        //update shortest
+                        shortest = (nodeName, shortestPaths[nodeName].Item1);
+                    }
+                }
+
+              
+                //Shortest path found
+                remainingNodes.Remove(shortest.Key);
+
+            }
+
+            //Shortest path to all nodes found
              
-            return (1, new List<Node>());
+            return (shortestPaths[end].Item1, shortestPaths[end].Item2);
         }
 
         public List<Node> getNodes()
@@ -116,7 +173,8 @@ namespace Graph
                 Console.WriteLine(node.name);
             }
 
-            graph.findShortestPath("Dunwich", "Maldon");
+            Tuple<int, List<Node>> shortestPath =  graph.findShortestPath("Dunwich", "Maldon");
+            Console.WriteLine("Shortest path between Dunwich and Maldon has length: {0}", shortestPath.Item1);
             
             Console.ReadLine();
         }
