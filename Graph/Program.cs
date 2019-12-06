@@ -57,7 +57,7 @@ namespace Graph
             return nodes;
         }
 
-        public (int, List<Node>) findShortestPath(string start, string end)
+        public Tuple<int, List<Node>> findShortestPath(string start, string end)
         {
             //New Dictionary that contains a the name of each node and corresponding shortest path length and node order
             Dictionary<string, Tuple<int, List<Node>>> shortestPaths = new Dictionary<string, Tuple<int, List<Node>>>();
@@ -101,42 +101,44 @@ namespace Graph
                         //Add node to path
                         List<Node> newPath = addNodeToPath(shortestPaths[lastVisitedNode.name].Item2, getNodeByName(node.Key));
                         //Update shortest Paths
-                        shortestPaths[node.Key] = (path, newPath);
+                        shortestPaths[node.Key] = new Tuple<int, List<Node>>(path, newPath);
 
-                    } else if (path < shortestPaths[node.Key]) {
+                    } else if (path < shortestPaths[node.Key].Item1 && shortestPaths[node.Key].Item1 != -1) {
                         //Add node to path
                         List<Node> newPath = addNodeToPath(shortestPaths[lastVisitedNode.name].Item2, getNodeByName(node.Key));
                         //Update shortest Paths
-                        shortestPaths[node.Key] = (path, newPath);
+                        shortestPaths[node.Key] = new Tuple<int, List<Node>>(path, newPath);
                     }
                 }
                 //After updating all shortest paths of connected nodes, check for the shortest one
-                KeyValuePair<string, int> shortest = ("default", -1);
+                KeyValuePair<string, int> shortest = new KeyValuePair<string, int>("default", -1);
                 foreach(string nodeName in remainingNodes)
                 {
                     Node node = getNodeByName(nodeName);
                     //first nodes
                     if (shortest.Value == -1) {
                         //update shortest
-                        shortest = (nodeName, shortestPaths[nodeName].Item1);
+                        shortest = new KeyValuePair<string, int>(nodeName, shortestPaths[nodeName].Item1);
                     
                     //check if the path to current node is shortest and make sure it has actually been visited
                     } else if (shortestPaths[nodeName].Item1 < shortest.Value && shortestPaths[nodeName].Item1 != -1)
                     {
                         //update shortest
-                        shortest = (nodeName, shortestPaths[nodeName].Item1);
+                        shortest = new KeyValuePair<string, int>(nodeName, shortestPaths[nodeName].Item1);
                     }
                 }
 
               
                 //Shortest path found
                 remainingNodes.Remove(shortest.Key);
+                //update last visited Node
+                lastVisitedNode = getNodeByName(shortest.Key);
 
             }
 
             //Shortest path to all nodes found
              
-            return (shortestPaths[end].Item1, shortestPaths[end].Item2);
+            return new Tuple<int, List<Node>>(shortestPaths[end].Item1, shortestPaths[end].Item2);
         }
 
         public List<Node> getNodes()
@@ -154,15 +156,17 @@ namespace Graph
             Graph graph = new Graph();
             graph.addNode("Dunwich", new Dictionary<string, int> { { "Blaxhall", 15 }, { "Harwich", 53 } });
             graph.addNode("Blaxhall", new Dictionary<string, int> { { "Dunwich", 15 }, { "Harwich", 40 }, { "Feering", 46 } });
-            graph.addNode("Harwich", new Dictionary<string, int> { { "Dunwich", 53 }, { "Blaxhill", 40 }, { "Tiptree", 31 }, { "Clacton", 17} });
-            graph.addNode("Feering", new Dictionary<string, int> { { "Maldon", 11 }, { "Blaxhill", 46 }, { "Tiptree", 3 } });
+            graph.addNode("Harwich", new Dictionary<string, int> { { "Dunwich", 53 }, { "Blaxhall", 40 }, { "Tiptree", 31 }, { "Clacton", 17} });
+            graph.addNode("Feering", new Dictionary<string, int> { { "Maldon", 11 }, { "Blaxhall", 46 }, { "Tiptree", 3 } });
             graph.addNode("Tiptree", new Dictionary<string, int> { { "Feering", 3 }, { "Maldon", 8 }, { "Harwich", 31 }, { "Clacton", 29 } });
             graph.addNode("Clacton", new Dictionary<string, int> { { "Harwich", 17 }, { "Maldon", 40 }, { "Tiptree", 29 } });
             graph.addNode("Maldon", new Dictionary<string, int> { { "Feering", 11 }, { "Tiptree", 8 }, { "Clacton", 40 } });
             //Console.WriteLine(graph.getNodes()[0].getConnectedNodes()["Harwich"]);
 
-            Console.WriteLine("Nodes connected to Tiptree: ");
-            foreach(string node in graph.getConnectedNodes("Tiptree").Keys)
+            Console.WriteLine("Please enter a node to find connected nodes: ");
+            string selectedNode = Console.ReadLine();
+            Console.WriteLine("Nodes connected to {0}: ", selectedNode);
+            foreach(string node in graph.getConnectedNodes(selectedNode).Keys)
             {
                 Console.WriteLine(node);
             }
@@ -173,9 +177,16 @@ namespace Graph
                 Console.WriteLine(node.name);
             }
 
-            Tuple<int, List<Node>> shortestPath =  graph.findShortestPath("Dunwich", "Maldon");
-            Console.WriteLine("Shortest path between Dunwich and Maldon has length: {0}", shortestPath.Item1);
-            
+            Console.WriteLine("Please enter a start node for shortest path: ");
+            string startNode = Console.ReadLine();
+            Console.WriteLine("Please enter an end node for shortest path: ");
+            string endNode = Console.ReadLine();
+
+            Tuple<int, List<Node>> shortestPath = graph.findShortestPath(startNode, endNode);
+            Console.WriteLine("Shortest path between {0} and {1} has length: {2}", startNode, endNode, shortestPath.Item1);
+            Console.WriteLine("Sequence of nodes starting at {0}", startNode);
+            foreach (Node node in shortestPath.Item2)
+                Console.WriteLine(node.name);
             Console.ReadLine();
         }
     }
