@@ -1,2 +1,2 @@
 # Graph
-Graph class with shortest path alogorithm
+Graph class with Dijkstra's algorithm.
